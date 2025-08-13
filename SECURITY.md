@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Live News — International · National · State · Local</title>
+  <meta name="description" content="Auto-updating news website without API keys: International, National, State, Local" />
+  <style>
+    :root{
+      --bg:#0b1020; --card:#121833; --muted:#96a2c9; --text:#e6ecff; --accent:#5b8cff; --accent-2:#23d3ee;
+      --ring: 0 0 0 2px rgba(91,140,255,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font:16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial; background:radial-gradient(1200px 800px at 10% -10%, #1b2244, #0b1020); color:var(--text)}
+    header{position:sticky; top:0; z-index:100; backdrop-filter:saturate(1.2) blur(6px); background:rgba(11,16,32,.7); border-bottom:1px solid rgba(255,255,255,.06)}
+    .wrap{max-width:1100px; margin:0 auto; padding:14px 16px}
+    .brand{display:flex; align-items:center; gap:10px}
+    .logo{width:36px;height:36px; border-radius:12px; background:conic-gradient(from 0deg, var(--accent), var(--accent-2)); box-shadow:0 8px 24px rgba(35,211,238,.25)}
+    .title{font-weight:700; letter-spacing:.2px}
+
+    nav{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+    .tab{appearance:none; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.05); color:var(--text); padding:8px 12px; border-radius:12px; cursor:pointer; transition:.2s ease; font-weight:600}
+    .tab:hover{transform:translateY(-1px); box-shadow:0 8px 24px rgba(0,0,0,.2)}
+    .tab.active{background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#061020; border-color:transparent}
+
+    .toolbar{display:grid; grid-template-columns: 1fr; gap:10px; margin-top:12px}
+    @media(min-width:840px){
+      .toolbar{grid-template-columns: 2fr 1fr 1fr 1fr}
+    }
+    .field{display:flex; align-items:center; gap:8px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); padding:8px 10px; border-radius:12px}
+    .field label{font-size:13px; color:var(--muted)}
+    .field input,.field select{width:100%; background:transparent; color:var(--text); border:none; outline:none}
+    .field input::placeholder{color:#9fb0ff8c}
+
+    main{max-width:1100px; margin:20px auto; padding:0 16px 80px}
+    .grid{display:grid; gap:16px}
+    @media(min-width:680px){.grid{grid-template-columns: repeat(2, minmax(0,1fr))}}
+    @media(min-width:980px){.grid{grid-template-columns: repeat(3, minmax(0,1fr))}}
+
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.10); border-radius:18px; overflow:hidden; display:flex; flex-direction:column; min-height:260px}
+    .thumb{height:160px; background:#0f1430; position:relative; overflow:hidden}
+    .thumb img{width:100%; height:100%; object-fit:cover; display:block; filter:saturate(1.05)}
+    .source-tag{position:absolute; bottom:8px; left:8px; background:rgba(0,0,0,.55); color:#e0e7ff; padding:4px 8px; font-size:12px; border-radius:999px}
+    .content{padding:12px 14px; display:flex; flex-direction:column; gap:8px}
+    .title-a{font-weight:700; color:var(--text); text-decoration:none}
+    .meta{font-size:12px; color:#a9b6e6}
+    .desc{font-size:14px; color:#ced7ff; opacity:.9}
+
+    .empty{padding:24px; text-align:center; color:var(--muted)}
+    .bar{display:flex; align-items:center; justify-content:space-between; gap:10px}
+    .bar .count{font-size:14px; color:var(--muted)}
+
+    .loader{width:56px; height:56px; border-radius:50%; border:4px solid rgba(255,255,255,.15); border-top-color:var(--accent); animation:spin 1s linear infinite; margin:40px auto}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    footer{position:fixed; bottom:12px; right:12px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); padding:8px 12px; border-radius:12px; font-size:12px; color:#b5c3ff}
+    footer a{color:#d2e0ff}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <div class="title">Live News Hub</div>
+          <div style="font-size:13px;color:var(--muted)">International · National · State · Local — No API key needed</div>
+        </div>
+      </div>
+
+      <nav id="tabs">
+        <button class="tab active" data-tab="international">🌍 International</button>
+        <button class="tab" data-tab="national">🇮🇳 National</button>
+        <button class="tab" data-tab="state">🏛 State</button>
+        <button class="tab" data-tab="local">🏠 Local</button>
+      </nav>
+
+      <div class="toolbar">
+        <div class="field">
+          <label for="q">Search</label>
+          <input id="q" type="text" placeholder="e.g. technology, cricket, budget" />
+        </div>
+        <div class="field">
+          <label for="state">State</label>
+          <select id="state"></select>
+        </div>
+        <div class="field">
+          <label for="city">City</label>
+          <input id="city" type="text" value="Hyderabad" placeholder="Enter city for Local news" />
+        </div>
+        <button id="refresh" class="tab" style="justify-self:end">↻ Refresh</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="bar wrap">
+      <div id="hint" class="count">Loading…</div>
+      <div class="count"><span id="count">0</span> articles</div>
+    </div>
+
+    <div id="grid" class="grid wrap"></div>
+    <div id="loading" class="loader" hidden></div>
+    <div id="empty" class="empty" hidden>No articles found. Try another query.</div>
+  </main>
+
+  <footer>
+    Feeds via public RSS + <a href="https://allorigins.win/" target="_blank" rel="noopener">AllOrigins</a>. Images from feeds may vary.
+  </footer>
+
+  <script>
+    // ------------------------ CONFIG ------------------------
+    const FEEDS = {
+      international: [
+        // BBC World
+        'http://feeds.bbci.co.uk/news/world/rss.xml',
+        // Al Jazeera Top
+        'https://www.aljazeera.com/xml/rss/all.xml',
+      ],
+      national: [
+        // Google News India Top Stories (English)
+        'https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en',
+      ],
+      // State & Local are constructed dynamically with Google News search
+    };
+
+    // India states (common)
+    const STATES = [
+      'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Andaman and Nicobar Islands','Chandigarh','Dadra and Nagar Haveli and Daman and Diu','Delhi','Jammu and Kashmir','Ladakh','Lakshadweep','Puducherry'
+    ];
+
+    // --------------- HELPERS: Fetch + Parse RSS ---------------
+    const ALO = (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+
+    function htmlToText(html){
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html; // will strip tags on textContent
+      return (tmp.textContent || tmp.innerText || '').replace(/\s+/g,' ').trim();
+    }
+
+    function extractImageFromItem(item){
+      // Try <media:content>, <enclosure>, or first <img> in description
+      const media = item.querySelector('media\\:content, content\\:encoded media\\:content');
+      if(media && media.getAttribute('url')) return media.getAttribute('url');
+      const enc = item.querySelector('enclosure');
+      if(enc && enc.getAttribute('url')) return enc.getAttribute('url');
+      const desc = item.querySelector('description')?.textContent || '';
+      const m = desc.match(/<img[^>]+src=["']([^"']+)["']/i);
+      if(m) return m[1];
+      return '';
+    }
+
+    function parseRSS(xmlText, sourceNameHint=''){
+      const doc = new DOMParser().parseFromString(xmlText, 'text/xml');
+      const feedTitle = doc.querySelector('channel>title')?.textContent || sourceNameHint || 'Feed';
+      const items = [...doc.querySelectorAll('item')].map(it => {
+        const title = it.querySelector('title')?.textContent?.trim() || 'Untitled';
+        const link = it.querySelector('link')?.textContent?.trim() || '#';
+        const pub = it.querySelector('pubDate')?.textContent?.trim() || '';
+        const descHtml = it.querySelector('description')?.textContent || '';
+        const desc = htmlToText(descHtml).slice(0,180);
+        const img = extractImageFromItem(it);
+        const source = it.querySelector('source')?.textContent?.trim() || feedTitle;
+        return {title, link, pubDate: pub, description: desc, image: img, source};
+      });
+      return items;
+    }
+
+    function timeAgo(pubDate){
+      if(!pubDate) return '';
+      const t = new Date(pubDate);
+      if(isNaN(t)) return '';
+      const diff = Math.floor((Date.now() - t.getTime())/1000);
+      if(diff < 60) return `${diff}s ago`;
+      const m = Math.floor(diff/60); if(m < 60) return `${m}m ago`;
+      const h = Math.floor(m/60); if(h < 24) return `${h}h ago`;
+      const d = Math.floor(h/24); return `${d}d ago`;
+    }
+
+    function makeGoogleNewsSearchRSS(q){
+      // English India edition
+      return `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-IN&gl=IN&ceid=IN:en`;
+    }
+
+    // ------------------------ RENDER ------------------------
+    const grid = document.getElementById('grid');
+    const empty = document.getElementById('empty');
+    const loading = document.getElementById('loading');
+    const countEl = document.getElementById('count');
+    const hintEl = document.getElementById('hint');
+
+    function articleCard(a){
+      const img = a.image ? `<div class="thumb"><img src="${a.image}" alt=""/><span class="source-tag">${a.source || ''}</span></div>` : `<div class="thumb"><span class="source-tag">${a.source || ''}</span></div>`;
+      const when = timeAgo(a.pubDate);
+      return `<article class="card">
+        ${img}
+        <div class="content">
+          <a class="title-a" href="${a.link}" target="_blank" rel="noopener">${a.title}</a>
+          <div class="desc">${a.description}</div>
+          <div class="meta">${when ? when + ' · ' : ''}<span>${new URL(a.link).hostname.replace('www.','')}</span></div>
+        </div>
+      </article>`;
+    }
+
+    function renderArticles(list){
+      grid.innerHTML = list.map(articleCard).join('');
+      countEl.textContent = list.length;
+      empty.hidden = list.length !== 0;
+    }
+
+    // ------------------------ LOAD LOGIC ------------------------
+    async function fetchOne(url){
+      try{
+        const res = await fetch(ALO(url));
+        if(!res.ok) throw new Error(res.status + ' ' + res.statusText);
+        const text = await res.text();
+        return parseRSS(text, new URL(url).hostname);
+      }catch(err){
+        console.warn('Feed failed', url, err);
+        return [];
+      }
+    }
+
+    async function loadTab(tab){
+      loading.hidden = false; hintEl.textContent = 'Loading…';
+      let feeds = [];
+      const query = document.getElementById('q').value.trim();
+      const state = document.getElementById('state').value;
+      const city = document.getElementById('city').value.trim();
+
+      if(tab === 'international'){
+        feeds = FEEDS.international;
+        if(query) feeds = [makeGoogleNewsSearchRSS(query)];
+      }
+      if(tab === 'national'){
+        feeds = FEEDS.national;
+        if(query) feeds = [makeGoogleNewsSearchRSS(`${query} India`)];
+      }
+      if(tab === 'state'){
+        const q = query ? `${query} ${state}` : `${state} India`;
+        feeds = [makeGoogleNewsSearchRSS(q)];
+      }
+      if(tab === 'local'){
+        const place = city || 'Hyderabad';
+        const q = query ? `${query} ${place}` : `${place} news`;
+        feeds = [makeGoogleNewsSearchRSS(q)];
+      }
+
+      const lists = await Promise.all(feeds.map(fetchOne));
+      // Merge and de-duplicate by link
+      const merged = [].concat(...lists);
+      const uniq = Array.from(new Map(merged.map(a=>[a.link, a])).values());
+      // Sort by pubDate desc if available
+      uniq.sort((a,b)=> new Date(b.pubDate) - new Date(a.pubDate));
+      renderArticles(uniq);
+      hintEl.textContent = tab[0].toUpperCase() + tab.slice(1) + (query? ` — filtered by "${query}"`: '');
+      loading.hidden = true;
+    }
+
+    // ------------------------ UI WIRING ------------------------
+    function setupTabs(){
+      const tabs = document.querySelectorAll('#tabs .tab');
+      tabs.forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          tabs.forEach(b=>b.classList.remove('active'));
+          btn.classList.add('active');
+          loadTab(btn.dataset.tab);
+        });
+      });
+    }
+
+    function setupControls(){
+      const stateSel = document.getElementById('state');
+      stateSel.innerHTML = STATES.map(s=>`<option ${s==='Telangana'?'selected':''}>${s}</option>`).join('');
+      document.getElementById('refresh').addEventListener('click', ()=>{
+        const active = document.querySelector('#tabs .tab.active').dataset.tab;
+        loadTab(active);
+      });
+      document.getElementById('q').addEventListener('keydown', (e)=>{
+        if(e.key==='Enter') document.getElementById('refresh').click();
+      });
+      document.getElementById('city').addEventListener('keydown', (e)=>{
+        if(e.key==='Enter') document.getElementById('refresh').click();
+      });
+    }
+
+    // ------------------------ INIT ------------------------
+    setupTabs();
+    setupControls();
+    loadTab('international');
+  </script>
+</body>
+</html>
