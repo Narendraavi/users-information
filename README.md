@@ -2,210 +2,293 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Modern Info Hub — Users Information</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Live News — International · National · State · Local</title>
+  <meta name="description" content="Auto-updating news website without API keys: International, National, State, Local" />
   <style>
-    /* Reset + system fonts */
     :root{
-      --bg:#f4f6f8; --card:#ffffff; --muted:#6b7280; --accent:#1E88E5; --accent-2:#FBC02D; --text:#0f172a;
-      --glass: rgba(255,255,255,0.6);
-    }
-    [data-theme="dark"]{
-      --bg:#0b1020; --card:#0f1725; --muted:#9aa3b2; --accent:#4fc3f7; --accent-2:#f6c84c; --text:#e6eef8; --glass: rgba(255,255,255,0.04);
+      --bg:#0b1020; --card:#121833; --muted:#96a2c9; --text:#e6ecff; --accent:#5b8cff; --accent-2:#23d3ee;
+      --ring: 0 0 0 2px rgba(91,140,255,.35);
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{
-      margin:0; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:gr;
-      -webkit-tap-highlight-color:transparent;
+    body{margin:0;font:16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial; background:radial-gradient(1200px 800px at 10% -10%, #1b2244, #0b1020); color:var(--text)}
+    header{position:sticky; top:0; z-index:100; backdrop-filter:saturate(1.2) blur(6px); background:rgba(11,16,32,.7); border-bottom:1px solid rgba(255,255,255,.06)}
+    .wrap{max-width:1100px; margin:0 auto; padding:14px 16px}
+    .brand{display:flex; align-items:center; gap:10px}
+    .logo{width:36px;height:36px; border-radius:12px; background:conic-gradient(from 0deg, var(--accent), var(--accent-2)); box-shadow:0 8px 24px rgba(35,211,238,.25)}
+    .title{font-weight:700; letter-spacing:.2px}
+
+    nav{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+    .tab{appearance:none; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.05); color:var(--text); padding:8px 12px; border-radius:12px; cursor:pointer; transition:.2s ease; font-weight:600}
+    .tab:hover{transform:translateY(-1px); box-shadow:0 8px 24px rgba(0,0,0,.2)}
+    .tab.active{background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#061020; border-color:transparent}
+
+    .toolbar{display:grid; grid-template-columns: 1fr; gap:10px; margin-top:12px}
+    @media(min-width:840px){
+      .toolbar{grid-template-columns: 2fr 1fr 1fr 1fr}
     }
-    .app{max-width:1100px;margin:32px auto;padding:16px}
+    .field{display:flex; align-items:center; gap:8px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); padding:8px 10px; border-radius:12px}
+    .field label{font-size:13px; color:var(--muted)}
+    .field input,.field select{width:100%; background:transparent; color:var(--text); border:none; outline:none}
+    .field input::placeholder{color:#9fb0ff8c}
 
-    /* Navbar */
-    .nav{position:sticky;top:12px;background:linear-gradient(180deg,transparent,transparent);display:flex;align-items:center;justify-content:space-between;padding:10px;border-radius:12px}
-    .brand{display:flex;gap:12px;align-items:center}
-    .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;color:white;font-weight:700}
-    .site-title{font-size:18px;font-weight:700}
-    .site-sub{font-size:12px;color:var(--muted)}
-    .nav-actions{display:flex;gap:8px;align-items:center}
-    .search{border:0;background:var(--glass);padding:8px;border-radius:8px;min-width:180px}
-    .btn{background:var(--accent);color:white;padding:8px 12px;border-radius:8px;border:0;cursor:pointer}
-    .toggle{background:transparent;border:1px solid var(--glass);padding:8px;border-radius:8px;cursor:pointer}
+    main{max-width:1100px; margin:20px auto; padding:0 16px 80px}
+    .grid{display:grid; gap:16px}
+    @media(min-width:680px){.grid{grid-template-columns: repeat(2, minmax(0,1fr))}}
+    @media(min-width:980px){.grid{grid-template-columns: repeat(3, minmax(0,1fr))}}
 
-    /* Layout */
-    .grid{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:18px}
-    @media (max-width:900px){.grid{grid-template-columns:1fr}.nav{position:static}}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.10); border-radius:18px; overflow:hidden; display:flex; flex-direction:column; min-height:260px}
+    .thumb{height:160px; background:#0f1430; position:relative; overflow:hidden}
+    .thumb img{width:100%; height:100%; object-fit:cover; display:block; filter:saturate(1.05)}
+    .source-tag{position:absolute; bottom:8px; left:8px; background:rgba(0,0,0,.55); color:#e0e7ff; padding:4px 8px; font-size:12px; border-radius:999px}
+    .content{padding:12px 14px; display:flex; flex-direction:column; gap:8px}
+    .title-a{font-weight:700; color:var(--text); text-decoration:none}
+    .meta{font-size:12px; color:#a9b6e6}
+    .desc{font-size:14px; color:#ced7ff; opacity:.9}
 
-    /* Main feed */
-    .feed{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-    @media (max-width:700px){.feed{grid-template-columns:1fr}}
-    .card{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(16,24,40,0.06)}
-    .card h3{margin:0 0 8px 0}
-    .meta{font-size:12px;color:var(--muted);margin-bottom:8px}
-    .excerpt{color:var(--muted);font-size:14px;line-height:1.45}
+    .empty{padding:24px; text-align:center; color:var(--muted)}
+    .bar{display:flex; align-items:center; justify-content:space-between; gap:10px}
+    .bar .count{font-size:14px; color:var(--muted)}
 
-    /* Section colors */
-    .tag{display:inline-block;padding:6px 8px;border-radius:8px;font-size:12px;color:white}
-    .tag.news{background:linear-gradient(90deg,var(--accent),#2176d2)}
-    .tag.health{background:linear-gradient(90deg,#43a047,#66bb6a)}
-    .tag.facts{background:linear-gradient(90deg,#8e24aa,#ab47bc)}
-    .tag.jokes{background:linear-gradient(90deg,#ff7043,#ff8a65)}
+    .loader{width:56px; height:56px; border-radius:50%; border:4px solid rgba(255,255,255,.15); border-top-color:var(--accent); animation:spin 1s linear infinite; margin:40px auto}
+    @keyframes spin{to{transform:rotate(360deg)}}
 
-    /* Right column widgets */
-    .widget + .widget{margin-top:12px}
-    .small-row{display:flex;justify-content:space-between;align-items:center}
-    .list{display:flex;flex-direction:column;gap:8px}
-
-    /* Footer */
-    footer{margin-top:20px;text-align:center;color:var(--muted);font-size:13px}
-
-    /* Dark-mode transition */
-    .card, body, .nav{transition:background-color .25s, color .25s}
-
-    /* Utilities */
-    .center{display:grid;place-items:center}
-    .muted{color:var(--muted)}
+    footer{position:fixed; bottom:12px; right:12px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); padding:8px 12px; border-radius:12px; font-size:12px; color:#b5c3ff}
+    footer a{color:#d2e0ff}
   </style>
 </head>
-<body data-theme="light">
-  <div class="app">
-    <header class="nav card">
+<body>
+  <header>
+    <div class="wrap">
       <div class="brand">
-        <div class="logo">UI</div>
+        <div class="logo"></div>
         <div>
-          <div class="site-title">Users Information</div>
-          <div class="site-sub">Tech • Health • Facts • Jokes • Weather</div>
+          <div class="title">Live News Hub</div>
+          <div style="font-size:13px;color:var(--muted)">International · National · State · Local — No API key needed</div>
         </div>
       </div>
 
-      <div class="nav-actions">
-        <input class="search" placeholder="Search articles, tips..." />
-        <button class="toggle" id="themeBtn" aria-label="Toggle theme">🌙</button>
+      <nav id="tabs">
+        <button class="tab active" data-tab="international">🌍 International</button>
+        <button class="tab" data-tab="national">🇮🇳 National</button>
+        <button class="tab" data-tab="state">🏛 State</button>
+        <button class="tab" data-tab="local">🏠 Local</button>
+      </nav>
+
+      <div class="toolbar">
+        <div class="field">
+          <label for="q">Search</label>
+          <input id="q" type="text" placeholder="e.g. technology, cricket, budget" />
+        </div>
+        <div class="field">
+          <label for="state">State</label>
+          <select id="state"></select>
+        </div>
+        <div class="field">
+          <label for="city">City</label>
+          <input id="city" type="text" value="Hyderabad" placeholder="Enter city for Local news" />
+        </div>
+        <button id="refresh" class="tab" style="justify-self:end">↻ Refresh</button>
       </div>
-    </header>
+    </div>
+  </header>
 
-    <main class="grid">
-      <section>
-        <div class="feed">
+  <main>
+    <div class="bar wrap">
+      <div id="hint" class="count">Loading…</div>
+      <div class="count"><span id="count">0</span> articles</div>
+    </div>
 
-          <!-- News Card -->
-          <article class="card">
-            <div class="small-row">
-              <span class="tag news">News</span>
-              <span class="meta">2 hours ago • Tech</span>
-            </div>
-            <h3>AI assistant reaches new milestone in understanding</h3>
-            <p class="excerpt">A new model update improves conversational understanding and reduces errors — sample content to show layout.</p>
-          </article>
+    <div id="grid" class="grid wrap"></div>
+    <div id="loading" class="loader" hidden></div>
+    <div id="empty" class="empty" hidden>No articles found. Try another query.</div>
+  </main>
 
-          <!-- Health Tip -->
-          <article class="card">
-            <div class="small-row">
-              <span class="tag health">Health</span>
-              <span class="meta">Today • Wellness</span>
-            </div>
-            <h3>3 simple habits for better sleep</h3>
-            <p class="excerpt">Keep a regular bedtime, reduce screens an hour before sleep, and avoid heavy meals late at night.</p>
-          </article>
-
-          <!-- Facts -->
-          <article class="card">
-            <div class="small-row">
-              <span class="tag facts">Facts</span>
-              <span class="meta">Did you know?</span>
-            </div>
-            <h3>Fun fact: Octopus has three hearts</h3>
-            <p class="excerpt">Two pump blood to the gills, one pumps to the rest of the body — cool, right?</p>
-          </article>
-
-          <!-- Jokes -->
-          <article class="card">
-            <div class="small-row">
-              <span class="tag jokes">Jokes</span>
-              <span class="meta">Lighten up</span>
-            </div>
-            <h3>Quick joke</h3>
-            <p class="excerpt">Why did the developer go broke? Because he used up all his cache. 😄</p>
-          </article>
-
-          <!-- Weather sample -->
-          <article class="card">
-            <div class="small-row">
-              <span class="tag news">Weather</span>
-              <span class="meta">Kolkata • Updated 30m</span>
-            </div>
-            <h3>28°C — Partly cloudy</h3>
-            <p class="excerpt">Light breeze, humidity 76%. Tap here to expand for hourly forecast (example).</p>
-          </article>
-
-        </div>
-
-        <!-- Larger feature card -->
-        <div style="margin-top:14px" class="card">
-          <div class="small-row">
-            <div>
-              <h3>Featured: How to get started with your website</h3>
-              <div class="muted">Step-by-step guide to publishing on GitHub Pages and optimizing for ads & analytics.</div>
-            </div>
-            <div class="center" style="min-width:88px">
-              <div style="font-size:12px;color:var(--muted)">Read time</div>
-              <div style="font-weight:700">6 min</div>
-            </div>
-          </div>
-        </div>
-
-      </section>
-
-      <aside>
-        <div class="widget card">
-          <div class="small-row"><strong>Quick Links</strong><span class="muted">Popular</span></div>
-          <div class="list" style="margin-top:10px">
-            <a class="muted" href="#">Top Tech News</a>
-            <a class="muted" href="#">Daily Health Tips</a>
-            <a class="muted" href="#">Random Facts</a>
-            <a class="muted" href="#">Joke of the Day</a>
-          </div>
-        </div>
-
-        <div class="widget card">
-          <div class="small-row"><strong>Currency</strong><span class="muted">Updated</span></div>
-          <div style="margin-top:10px" class="muted">1 USD = 83.45 INR (sample)</div>
-        </div>
-
-        <div class="widget card">
-          <div class="small-row"><strong>Subscribe</strong><span class="muted">Free newsletter</span></div>
-          <div style="margin-top:10px;display:flex;gap:8px">
-            <input placeholder="Email address" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--glass)" />
-            <button class="btn">Subscribe</button>
-          </div>
-        </div>
-
-        <div class="widget card">
-          <div class="small-row"><strong>About</strong><span class="muted">Users Information</span></div>
-          <p class="muted" style="margin-top:8px">A compact, modular theme to host short content pieces across categories — easy to expand and customize.</p>
-        </div>
-
-      </aside>
-    </main>
-
-    <footer class="muted">© Users Information • Built with a lightweight, responsive theme — customise as you like.</footer>
-  </div>
+  <footer>
+    Feeds via public RSS + <a href="https://allorigins.win/" target="_blank" rel="noopener">AllOrigins</a>. Images from feeds may vary.
+  </footer>
 
   <script>
-    // Theme toggle (persists in localStorage)
-    const body = document.body;
-    const btn = document.getElementById('themeBtn');
-    const saved = localStorage.getItem('ui-theme') || 'light';
-    function applyTheme(t){
-      document.body.setAttribute('data-theme', t);
-      btn.textContent = t === 'light' ? '🌙' : '☀️';
-      localStorage.setItem('ui-theme', t);
-    }
-    applyTheme(saved);
-    btn.addEventListener('click', ()=> applyTheme(document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light'));
+    // ------------------------ CONFIG ------------------------
+    const FEEDS = {
+      international: [
+        // BBC World
+        'http://feeds.bbci.co.uk/news/world/rss.xml',
+        // Al Jazeera Top
+        'https://www.aljazeera.com/xml/rss/all.xml',
+      ],
+      national: [
+        // Google News India Top Stories (English)
+        'https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en',
+      ],
+      // State & Local are constructed dynamically with Google News search
+    };
 
-    // Small enhancement: keyboard shortcut 't' to toggle theme
-    window.addEventListener('keydown', (e)=>{ if(e.key==='t') btn.click(); });
+    // India states (common)
+    const STATES = [
+      'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Andaman and Nicobar Islands','Chandigarh','Dadra and Nagar Haveli and Daman and Diu','Delhi','Jammu and Kashmir','Ladakh','Lakshadweep','Puducherry'
+    ];
+
+    // --------------- HELPERS: Fetch + Parse RSS ---------------
+    const ALO = (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+
+    function htmlToText(html){
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html; // will strip tags on textContent
+      return (tmp.textContent || tmp.innerText || '').replace(/\s+/g,' ').trim();
+    }
+
+    function extractImageFromItem(item){
+      // Try <media:content>, <enclosure>, or first <img> in description
+      const media = item.querySelector('media\\:content, content\\:encoded media\\:content');
+      if(media && media.getAttribute('url')) return media.getAttribute('url');
+      const enc = item.querySelector('enclosure');
+      if(enc && enc.getAttribute('url')) return enc.getAttribute('url');
+      const desc = item.querySelector('description')?.textContent || '';
+      const m = desc.match(/<img[^>]+src=["']([^"']+)["']/i);
+      if(m) return m[1];
+      return '';
+    }
+
+    function parseRSS(xmlText, sourceNameHint=''){
+      const doc = new DOMParser().parseFromString(xmlText, 'text/xml');
+      const feedTitle = doc.querySelector('channel>title')?.textContent || sourceNameHint || 'Feed';
+      const items = [...doc.querySelectorAll('item')].map(it => {
+        const title = it.querySelector('title')?.textContent?.trim() || 'Untitled';
+        const link = it.querySelector('link')?.textContent?.trim() || '#';
+        const pub = it.querySelector('pubDate')?.textContent?.trim() || '';
+        const descHtml = it.querySelector('description')?.textContent || '';
+        const desc = htmlToText(descHtml).slice(0,180);
+        const img = extractImageFromItem(it);
+        const source = it.querySelector('source')?.textContent?.trim() || feedTitle;
+        return {title, link, pubDate: pub, description: desc, image: img, source};
+      });
+      return items;
+    }
+
+    function timeAgo(pubDate){
+      if(!pubDate) return '';
+      const t = new Date(pubDate);
+      if(isNaN(t)) return '';
+      const diff = Math.floor((Date.now() - t.getTime())/1000);
+      if(diff < 60) return `${diff}s ago`;
+      const m = Math.floor(diff/60); if(m < 60) return `${m}m ago`;
+      const h = Math.floor(m/60); if(h < 24) return `${h}h ago`;
+      const d = Math.floor(h/24); return `${d}d ago`;
+    }
+
+    function makeGoogleNewsSearchRSS(q){
+      // English India edition
+      return `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-IN&gl=IN&ceid=IN:en`;
+    }
+
+    // ------------------------ RENDER ------------------------
+    const grid = document.getElementById('grid');
+    const empty = document.getElementById('empty');
+    const loading = document.getElementById('loading');
+    const countEl = document.getElementById('count');
+    const hintEl = document.getElementById('hint');
+
+    function articleCard(a){
+      const img = a.image ? `<div class="thumb"><img src="${a.image}" alt=""/><span class="source-tag">${a.source || ''}</span></div>` : `<div class="thumb"><span class="source-tag">${a.source || ''}</span></div>`;
+      const when = timeAgo(a.pubDate);
+      return `<article class="card">
+        ${img}
+        <div class="content">
+          <a class="title-a" href="${a.link}" target="_blank" rel="noopener">${a.title}</a>
+          <div class="desc">${a.description}</div>
+          <div class="meta">${when ? when + ' · ' : ''}<span>${new URL(a.link).hostname.replace('www.','')}</span></div>
+        </div>
+      </article>`;
+    }
+
+    function renderArticles(list){
+      grid.innerHTML = list.map(articleCard).join('');
+      countEl.textContent = list.length;
+      empty.hidden = list.length !== 0;
+    }
+
+    // ------------------------ LOAD LOGIC ------------------------
+    async function fetchOne(url){
+      try{
+        const res = await fetch(ALO(url));
+        if(!res.ok) throw new Error(res.status + ' ' + res.statusText);
+        const text = await res.text();
+        return parseRSS(text, new URL(url).hostname);
+      }catch(err){
+        console.warn('Feed failed', url, err);
+        return [];
+      }
+    }
+
+    async function loadTab(tab){
+      loading.hidden = false; hintEl.textContent = 'Loading…';
+      let feeds = [];
+      const query = document.getElementById('q').value.trim();
+      const state = document.getElementById('state').value;
+      const city = document.getElementById('city').value.trim();
+
+      if(tab === 'international'){
+        feeds = FEEDS.international;
+        if(query) feeds = [makeGoogleNewsSearchRSS(query)];
+      }
+      if(tab === 'national'){
+        feeds = FEEDS.national;
+        if(query) feeds = [makeGoogleNewsSearchRSS(`${query} India`)];
+      }
+      if(tab === 'state'){
+        const q = query ? `${query} ${state}` : `${state} India`;
+        feeds = [makeGoogleNewsSearchRSS(q)];
+      }
+      if(tab === 'local'){
+        const place = city || 'Hyderabad';
+        const q = query ? `${query} ${place}` : `${place} news`;
+        feeds = [makeGoogleNewsSearchRSS(q)];
+      }
+
+      const lists = await Promise.all(feeds.map(fetchOne));
+      // Merge and de-duplicate by link
+      const merged = [].concat(...lists);
+      const uniq = Array.from(new Map(merged.map(a=>[a.link, a])).values());
+      // Sort by pubDate desc if available
+      uniq.sort((a,b)=> new Date(b.pubDate) - new Date(a.pubDate));
+      renderArticles(uniq);
+      hintEl.textContent = tab[0].toUpperCase() + tab.slice(1) + (query? ` — filtered by "${query}"`: '');
+      loading.hidden = true;
+    }
+
+    // ------------------------ UI WIRING ------------------------
+    function setupTabs(){
+      const tabs = document.querySelectorAll('#tabs .tab');
+      tabs.forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          tabs.forEach(b=>b.classList.remove('active'));
+          btn.classList.add('active');
+          loadTab(btn.dataset.tab);
+        });
+      });
+    }
+
+    function setupControls(){
+      const stateSel = document.getElementById('state');
+      stateSel.innerHTML = STATES.map(s=>`<option ${s==='Telangana'?'selected':''}>${s}</option>`).join('');
+      document.getElementById('refresh').addEventListener('click', ()=>{
+        const active = document.querySelector('#tabs .tab.active').dataset.tab;
+        loadTab(active);
+      });
+      document.getElementById('q').addEventListener('keydown', (e)=>{
+        if(e.key==='Enter') document.getElementById('refresh').click();
+      });
+      document.getElementById('city').addEventListener('keydown', (e)=>{
+        if(e.key==='Enter') document.getElementById('refresh').click();
+      });
+    }
+
+    // ------------------------ INIT ------------------------
+    setupTabs();
+    setupControls();
+    loadTab('international');
   </script>
 </body>
 </html>
